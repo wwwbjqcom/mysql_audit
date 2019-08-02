@@ -10,6 +10,6 @@
 如果是对本地端口进行监听，比如我们中间件层端口为6001： python tcp_dump.py -e eth0 -p 6001 -t des
 
 打印数据格式如下：
-    source_host: 10.1.1.1 source_port: 55294 destination_host: 10.1.1.2 destination_port: 3306 sql: select * from t1 values: None execute_time:0.00028  status:#42000SELECT command denied to user 'test'@'10.6.1.1' for table 't1'
+    source_host: 10.1.1.1 source_port: 55294 destination_host: 10.1.1.2 destination_port: 3306 sql: select * from t1 values: None execute_time:0.00028  status:#42000SELECT command denied to user 'test'@'10.1.1.1' for table 't1'
 
 特别提示： 由于是实时获取包分析，如果数据流非常大的话，会占用不少的cpu时间
