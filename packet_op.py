@@ -16,7 +16,7 @@ class Op_packet:
         self.queue = kwargs['queue']
         self._type = kwargs['_type']
     def __get_netcard(self):
-        '''获取IP地址'''
+        '''get ip address'''
         info = psutil.net_if_addrs()
         for k, v in info.items():
             for item in v:
