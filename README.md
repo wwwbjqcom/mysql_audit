@@ -5,7 +5,6 @@
 
 执行方式：
     python tcp_dump.py -h 可以获取参数介绍
-
-示例：
-    比如我在中间件层对后面3306端口的数据流进行监听： python tcp_dump.py -e eth0 -p 3306 -t src
-    如果是对本地端口进行监听，比如我们中间件层端口为6001： python tcp_dump.py -e eth0 -p 6001 -t des
+    
+比如我在中间件层对后面3306端口的数据流进行监听： python tcp_dump.py -e eth0 -p 3306 -t src
+如果是对本地端口进行监听，比如我们中间件层端口为6001： python tcp_dump.py -e eth0 -p 6001 -t des
