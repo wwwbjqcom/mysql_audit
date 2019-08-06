@@ -12,3 +12,5 @@
 
 获取内容打印如下：
     2019-08-06 08:52:22,984  INFO  log.py : INFO  source_host: 10.1.11.59 source_port: 59272 destination_host: 10.1.1.46 destination_port: 3306 user_name: test01 sql: INSERT INTO proxy_heart_beat.tb_heartbeat (p_id, p_ts) VALUES('?', '?') values: None execute_time:0.0001  status:#42000INSERT, UPDATE command denied to user 'test01'@'10.1.11.59' for table 'tb_heartbeat'
+    
+日志没10分钟切割一次，保留一个小时的，如果有需要保留更长或者更改切割时间，可以修改log.py中的参数
