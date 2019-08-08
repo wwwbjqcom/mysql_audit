@@ -268,7 +268,7 @@ class Op_packet:
                                                         srcport=tcp.sport,dsthost=dst_host,dstport=tcp.dport,
                         all_session_users=self.all_session_users)
 
-                    if packet_header and packet_header in (0x01,0x0C):
+                    if packet_response and packet_response in ('COM_PROCESS_KILL', 'COM_QUIT'):
                         """close connection"""
                         if session in self.all_session_users:
                             del self.all_session_users[session]
