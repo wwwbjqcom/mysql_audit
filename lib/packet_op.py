@@ -124,6 +124,7 @@ class Op_packet:
             Returns:
                 list: [sql,[values,]] If it is an insert statement, the returned data is empty.
         """
+        sql = sql.strip('\n').strip()
         if sql.startswith('insert') or sql.startswith('INSERT'):
             k = sql.index('(')
             v = sql.index(')')
@@ -278,8 +279,24 @@ class Op_packet:
                         if session in self.all_session_users:
                             self.create_conn(session,client_packet_text,packet_seq_id,'client',response_type,response_status)
 
-                        session_status[session] = {'start_time':_cur_time,'request_text':client_packet_text,
-                                                   'request_header':packet_header,'seq_id':packet_seq_id,'response_type':response_type}
+                        if packet_header == 0x16:
+                            session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
+                                                       'request_header': packet_header, 'seq_id': packet_seq_id,
+                                                       'response_type': response_type,'com_pre':True}
+
+                        elif packet_header == 0x17 and 'com_pre' in session_status[session]:
+                            del session_status[session]['com_pre']
+                            continue
+
+                        elif packet_header in (0x01, 0x19, 0x18):
+                            session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
+                                                       'request_header': packet_header, 'seq_id': packet_seq_id,
+                                                       'response_type': response_type,'end_time':_cur_time,
+                                                       'status':1,'response_status':None}
+                        else:
+                            session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
+                                                       'request_header': packet_header, 'seq_id': packet_seq_id,
+                                                       'response_type': response_type}
 
                         if session in self.all_session_users and self.all_session_users[session]['status']:
                             session_status[session]['user_name'] = self.all_session_users[session]['user']
@@ -293,15 +310,6 @@ class Op_packet:
                             if session not in self.get_user_list and packet_header not in (0x01, 0x19, 0x18) and any([self.mysql_user,self.mysql_passwd]):
                                 self.get_user_list[session]=[src_host,tcp.sport,dst_host,tcp.dport,session]
 
-                        if packet_header == 0x16:
-                            session_status[session]['com_pre'] = True
-                        elif packet_header == 0x17 and 'com_pre' in session_status[session]:
-                            del session_status[session]['com_pre']
-
-                        elif packet_header in (0x01, 0x19, 0x18):
-                            session_status[session]['end_time'] = _cur_time
-                            session_status[session]['status'] = 1
-                            session_status[session]['response_status'] = None
 
                     elif packet_response:
                         if packet_header and packet_header in (0x09, 0x0a):
