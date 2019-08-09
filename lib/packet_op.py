@@ -288,11 +288,13 @@ class Op_packet:
                             del session_status[session]['com_pre']
                             continue
 
-                        elif packet_header in (0x01, 0x19, 0x18):
+                        elif packet_header in (0x01, 0x18):
                             session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
                                                        'request_header': packet_header, 'seq_id': packet_seq_id,
                                                        'response_type': response_type,'end_time':_cur_time,
                                                        'status':1,'response_status':None}
+                        elif packet_header == 0x19:
+                            continue
                         else:
                             session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
                                                        'request_header': packet_header, 'seq_id': packet_seq_id,
