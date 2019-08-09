@@ -284,7 +284,7 @@ class Op_packet:
                                                        'request_header': packet_header, 'seq_id': packet_seq_id,
                                                        'response_type': response_type,'com_pre':True}
 
-                        elif packet_header == 0x17 and 'com_pre' in session_status[session]:
+                        elif packet_header == 0x17 and session in session_status and 'com_pre' in session_status[session]:
                             del session_status[session]['com_pre']
                             continue
 
