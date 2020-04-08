@@ -208,13 +208,19 @@ class Op_packet:
                         self.all_session_users[session]['status'] = True
                         self.all_session_users[session]['date'] = time.time()
                         _session = eval(session)
-                        self._logging.info(msg=
-                                      'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
-                                      'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],
-                                                                          _session[3],
-                                                                          self.all_session_users[session]['user'],
-                                                                          'create connection', None,
-                                                                          None,response_status))
+                        jsons = {'source_host': _session[0], 'source_port': _session[1],
+                                 'destination_host': _session[2], 'destination_port': _session[3],
+                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'values': None,
+                                 'execute_time': None,
+                                 'status': response_status}
+                        self._logging.info(msg=json.dumps(jsons))
+                        # self._logging.info(msg=
+                        #               'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
+                        #               'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],
+                        #                                                   _session[3],
+                        #                                                   self.all_session_users[session]['user'],
+                        #                                                   'create connection', None,
+                        #                                                   None,response_status))
                         if response_type == 'ERR_Packet':
                             del self.all_session_users[session]
                     else:
