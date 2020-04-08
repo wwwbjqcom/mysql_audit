@@ -9,6 +9,7 @@ from dpkt.compat import compat_ord
 import time,threading
 from lib.mysql_protocol import mysql_packet
 from lib.db import db
+import json
 
 class Op_packet:
     def __init__(self,**kwargs):
@@ -351,13 +352,17 @@ class Op_packet:
                             sql, values = session_status[session]['request_text'],None
                         _session = eval(session)
                         try:
-                            self._logging.info(msg=
-                                'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
-                                'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],_session[3],
-                                                                    session_status[session]['user_name'],
-                                                                    sql, values,
-                                                                    execute_time,
-                                                                    session_status[session]['response_status']))
+                            jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
+                                     'user_name':session_status[session]['user_name'],'sql':sql, 'values':values,'execute_time':execute_time,
+                                     'status':session_status[session]['response_status']}
+                            self._logging.info(msg=json.dumps(jsons))
+                            # self._logging.info(msg=
+                            #     'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
+                            #     'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],_session[3],
+                            #                                         session_status[session]['user_name'],
+                            #                                         sql, values,
+                            #                                         execute_time,
+                            #                                         session_status[session]['response_status']))
                         except:
                             pass
                         del_session.append(session)
