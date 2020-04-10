@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/mysql_audit_me.iml" filepath="$PROJECT_DIR$/.idea/mysql_audit_me.iml" />
+      <module fileurl="file://$USER_HOME$/py_test/redis_audit/.idea/redis_audit.iml" filepath="$USER_HOME$/py_test/redis_audit/.idea/redis_audit.iml" />
     </modules>
   </component>
 </project>

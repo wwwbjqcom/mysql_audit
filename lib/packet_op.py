@@ -212,7 +212,7 @@ class Op_packet:
                                  'destination_host': _session[2], 'destination_port': _session[3],
                                  'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'values': None,
                                  'execute_time': None,
-                                 'status': response_status}
+                                 'status': response_status, 'time': time.time()}
                         self._logging.info(msg=json.dumps(jsons))
                         # self._logging.info(msg=
                         #               'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
@@ -360,7 +360,7 @@ class Op_packet:
                         try:
                             jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
                                      'user_name':session_status[session]['user_name'],'sql':sql, 'values':values,'execute_time':execute_time,
-                                     'status':session_status[session]['response_status']}
+                                     'status':session_status[session]['response_status'], 'time':_cur_time}
                             self._logging.info(msg=json.dumps(jsons))
                             # self._logging.info(msg=
                             #     'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
