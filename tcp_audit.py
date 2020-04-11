@@ -108,7 +108,7 @@ def main(argv):
             _argv['passwd'] = a
         elif o == '--ckhost':
             _argv['ckhost'] = a
-        elif 0 == '--many':
+        elif o == '--many':
             _argv['many'] = a
         else:
             print('unhandled option')
