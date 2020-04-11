@@ -365,23 +365,23 @@ class Op_packet:
                         else:
                             sql, values = session_status[session]['request_text'],None
                         _session = eval(session)
-                        try:
-                            jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
-                                     'user_name':session_status[session]['user_name'],'sql':sql, 'reponse_value':values,'execute_time':execute_time,
-                                     'response_status':session_status[session]['response_status'], 'event_date':_cur_time}
-                            if self.ckhost:
-                                self.ck_insert(jsons)
-                            else:
-                                self._logging.info(msg=json.dumps(jsons))
-                            # self._logging.info(msg=
-                            #     'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
-                            #     'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],_session[3],
-                            #                                         session_status[session]['user_name'],
-                            #                                         sql, values,
-                            #                                         execute_time,
-                            #                                         session_status[session]['response_status']))
-                        except:
-                            print(traceback.format_exc())
+                        #try:
+                        jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
+                                 'user_name':session_status[session]['user_name'],'sql':sql, 'reponse_value':values,'execute_time':execute_time,
+                                 'response_status':session_status[session]['response_status'], 'event_date':_cur_time}
+                        if self.ckhost:
+                            self.ck_insert(jsons)
+                        else:
+                            self._logging.info(msg=json.dumps(jsons))
+                        # self._logging.info(msg=
+                        #     'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
+                        #     'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],_session[3],
+                        #                                         session_status[session]['user_name'],
+                        #                                         sql, values,
+                        #                                         execute_time,
+                        #                                         session_status[session]['response_status']))
+                        # except:
+                        #     print(traceback.format_exc())
                         del_session.append(session)
 
                 for session in del_session:
