@@ -10,7 +10,7 @@ import time,threading
 from lib.mysql_protocol import mysql_packet
 from lib.db import db
 from clickhouse_driver import connect
-import json
+import json,traceback
 
 class Op_packet:
     def __init__(self,**kwargs):
@@ -381,7 +381,7 @@ class Op_packet:
                             #                                         execute_time,
                             #                                         session_status[session]['response_status']))
                         except:
-                            pass
+                            print(traceback.format_exc())
                         del_session.append(session)
 
                 for session in del_session:
