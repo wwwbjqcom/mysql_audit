@@ -109,7 +109,7 @@ def main(argv):
         elif o == '--ckhost':
             _argv['ckhost'] = a
         elif o == '--many':
-            _argv['many'] = a
+            _argv['many'] = int(a)
         else:
             print('unhandled option')
             Usage()
