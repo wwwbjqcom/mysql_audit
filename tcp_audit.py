@@ -77,6 +77,8 @@ def Usage():
       		-t [--type] : define whether the local address is the sender or the receiver [src/des]
       		-u [--user] : remote mysql node username
       		-P [--passwd] : mysql password
+      		--ckhost : clickhouse host
+      		--many :  execute many number, default 1000
     	    """
     print(__usage__)
 
@@ -85,7 +87,7 @@ def main(argv):
     _argv = {}
     try:
         opts, args = getopt.getopt(argv[1:], 'hp:e:t:u:P:',
-                                   ['help', 'port=', 'eth=','type=','user=','passwd='])
+                                   ['help', 'port=', 'eth=','type=','user=','passwd=','ckhost=','many='])
     except getopt.GetoptError as err:
         print(str(err))
         Usage()
@@ -104,6 +106,10 @@ def main(argv):
             _argv['user'] = a
         elif o in ('-P','--passwd'):
             _argv['passwd'] = a
+        elif o == '--ckhost':
+            _argv['ckhost'] = a
+        elif 0 == '--many':
+            _argv['many'] = a
         else:
             print('unhandled option')
             Usage()

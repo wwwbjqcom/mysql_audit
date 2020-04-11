@@ -9,6 +9,7 @@ from dpkt.compat import compat_ord
 import time,threading
 from lib.mysql_protocol import mysql_packet
 from lib.db import db
+from clickhouse_driver import connect
 import json
 
 class Op_packet:
@@ -16,7 +17,8 @@ class Op_packet:
         self.kwargs = kwargs
         self.queue = kwargs['queue']
         self._type = kwargs['_type']
-
+        self.ckhost = kwargs['ckhost'] if 'ckhost' in kwargs else None
+        self.many = kwargs['many'] if 'many' in kwargs else 1000
         self.mysql_user = kwargs['user'] if 'user' in kwargs else None
         self.mysql_passwd = kwargs['passwd'] if 'passwd' in kwargs else None
         if self.mysql_user:
@@ -29,6 +31,9 @@ class Op_packet:
 
         self.all_session_users = {}
         self.get_user_list = {}
+
+        self.op_list = []       #用于写入ck的数据临时存放，达到要求批量写入
+        self.op_num = 0         #统计条数
 
     def __get_netcard(self):
         '''get ip address'''
@@ -210,10 +215,13 @@ class Op_packet:
                         _session = eval(session)
                         jsons = {'source_host': _session[0], 'source_port': _session[1],
                                  'destination_host': _session[2], 'destination_port': _session[3],
-                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'values': None,
+                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'reponse_value': None,
                                  'execute_time': None,
-                                 'status': response_status, 'time': time.time()}
-                        self._logging.info(msg=json.dumps(jsons))
+                                 'response_status': response_status, 'event_date': time.time()}
+                        if self.ckhost:
+                            self.ck_insert(jsons)
+                        else:
+                            self._logging.info(msg=json.dumps(jsons))
                         # self._logging.info(msg=
                         #               'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
                         #               'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],
@@ -359,9 +367,12 @@ class Op_packet:
                         _session = eval(session)
                         try:
                             jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
-                                     'user_name':session_status[session]['user_name'],'sql':sql, 'values':values,'execute_time':execute_time,
-                                     'status':session_status[session]['response_status'], 'time':_cur_time}
-                            self._logging.info(msg=json.dumps(jsons))
+                                     'user_name':session_status[session]['user_name'],'sql':sql, 'reponse_value':values,'execute_time':execute_time,
+                                     'response_status':session_status[session]['response_status'], 'event_date':_cur_time}
+                            if self.ckhost:
+                                self.ck_insert(jsons)
+                            else:
+                                self._logging.info(msg=json.dumps(jsons))
                             # self._logging.info(msg=
                             #     'source_host: {} source_port: {} destination_host: {} destination_port: {} user_name: {} sql: {} values: {} '
                             #     'execute_time:{}  status:{}'.format(_session[0], _session[1], _session[2],_session[3],
@@ -378,3 +389,39 @@ class Op_packet:
 
             else:
                 time.sleep(0.01)
+
+
+    def ck_insert(self, jsons):
+        '''
+        必须先在clickhouse创建表
+
+        CREATE table mysql_audit.mysql_audit_info(
+        source_host String,
+        source_port UInt64,
+        destination_host String,
+        destination_port UInt64,
+        user_name String,
+        sql String,
+        reponse_value String,
+        execute_time Float64,
+        response_status String,
+        event_date DateTime)
+        ENGINE=MergeTree()
+        PARTITION BY toYYYYMMDD(event_date)
+        ORDER BY (source_host, source_port, event_date)
+        TTL event_date + INTERVAL 5 DAY
+        SETTINGS index_granularity=8192,enable_mixed_granularity_parts=1;
+        :param jsons:
+        :return:
+        '''
+        self.op_list.append(jsons)
+        self.op_num += 1
+        if self.op_num >= self.many:
+            ck_url = 'clickhouse://{}'.format(self.ckhost)
+            conn = connect(ck_url)
+            cursor = conn.cursor()
+            cursor.executemany('insert into mysql_audit.mysql_audit_info(source_host,source_port,destination_host,destination_port,user_name,'
+                               'sql,reponse_value,execute_time,response_status,event_date) values',self.op_list)
+            self.op_num = 0
+            self.op_list = []
+
