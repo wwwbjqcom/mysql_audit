@@ -140,7 +140,7 @@ class Op_packet:
             except:
                 index = sql.index('VALUES')
 
-            return sql[:index + 6] + str(v_str), None
+            return sql[:index + 6] + str(v_str), ''
 
 
         elif sql.startswith('update') or sql.startswith('UPDATE'):
@@ -155,18 +155,18 @@ class Op_packet:
                 try:
                     where_index = sql.index('WHERE')
                 except:
-                    where_index = None
+                    where_index = ''
             sql_start = sql[:set_index + 4]
             if where_index:
                 sql_end = sql[where_index - 1:]
             else:
                 sql_end = ''
             _set_str = self.set_str(sql[set_index + 4:where_index])
-            return sql_start + _set_str + sql_end, None
+            return sql_start + _set_str + sql_end, ''
 
 
         else:
-            return sql, None
+            return sql, ''
 
     def check_packet_type(self,response):
         respons_status = {
@@ -251,7 +251,7 @@ class Op_packet:
             dd.close()
             return user_name
         else:
-            return None
+            return ''
 
 
 
