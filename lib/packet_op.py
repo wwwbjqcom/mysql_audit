@@ -217,7 +217,7 @@ class Op_packet:
                                  'destination_host': _session[2], 'destination_port': _session[3],
                                  'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'reponse_value': '',
                                  'execute_time': 0,
-                                 'response_status': response_status, 'event_date': time.time()}
+                                 'response_status': response_status, 'event_date': int(time.time())}
                         if self.ckhost:
                             self.ck_insert(jsons)
                         else:
@@ -368,7 +368,7 @@ class Op_packet:
                         #try:
                         jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
                                  'user_name':session_status[session]['user_name'],'sql':sql, 'reponse_value':values,'execute_time':execute_time,
-                                 'response_status':session_status[session]['response_status'], 'event_date':_cur_time}
+                                 'response_status':session_status[session]['response_status'], 'event_date':int(_cur_time)}
                         if self.ckhost:
                             self.ck_insert(jsons)
                         else:
@@ -417,11 +417,14 @@ class Op_packet:
         self.op_list.append(jsons)
         self.op_num += 1
         if self.op_num >= self.many:
-            ck_url = 'clickhouse://{}'.format(self.ckhost)
-            conn = connect(ck_url)
-            cursor = conn.cursor()
-            cursor.executemany('insert into mysql_audit.mysql_audit_info(source_host,source_port,destination_host,destination_port,user_name,'
-                               'sql,reponse_value,execute_time,response_status,event_date) values',self.op_list)
+            try:
+                ck_url = 'clickhouse://{}'.format(self.ckhost)
+                conn = connect(ck_url)
+                cursor = conn.cursor()
+                cursor.executemany('insert into mysql_audit.mysql_audit_info(source_host,source_port,destination_host,destination_port,user_name,'
+                                   'sql,reponse_value,execute_time,response_status,event_date) values',self.op_list)
+            except:
+                print(traceback.format_exc())
             self.op_num = 0
             self.op_list = []
 
