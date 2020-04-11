@@ -215,8 +215,8 @@ class Op_packet:
                         _session = eval(session)
                         jsons = {'source_host': _session[0], 'source_port': _session[1],
                                  'destination_host': _session[2], 'destination_port': _session[3],
-                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'reponse_value': None,
-                                 'execute_time': None,
+                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'reponse_value': '',
+                                 'execute_time': 0,
                                  'response_status': response_status, 'event_date': time.time()}
                         if self.ckhost:
                             self.ck_insert(jsons)
@@ -307,7 +307,7 @@ class Op_packet:
                             session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
                                                        'request_header': packet_header, 'seq_id': packet_seq_id,
                                                        'response_type': response_type,'end_time':_cur_time,
-                                                       'status':1,'response_status':None}
+                                                       'status':1,'response_status':''}
                         elif packet_header == 0x19:
                             continue
                         else:
@@ -323,7 +323,7 @@ class Op_packet:
                             #                                                           mysql_host=dst_host,
                             #                                                           mysql_port=tcp.dport,
                             #                                                           session=session)
-                            session_status[session]['user_name'] = None
+                            session_status[session]['user_name'] = ''
                             if session not in self.get_user_list and packet_header not in (0x01, 0x19, 0x18) and any([self.mysql_user,self.mysql_passwd]):
                                 self.get_user_list[session]=[src_host,tcp.sport,dst_host,tcp.dport,session]
 
@@ -331,7 +331,7 @@ class Op_packet:
                     elif packet_response:
                         if packet_header and packet_header in (0x09, 0x0a):
                             """connection"""
-                            self.all_session_users[session] = {'pre': True, 'user': None,
+                            self.all_session_users[session] = {'pre': True, 'user': '',
                                                                'server_version': packet_response,
                                                                'seq_id': packet_seq_id, 'status': False,'date':_cur_time}
                             continue
@@ -363,7 +363,7 @@ class Op_packet:
                         if session_status[session]['request_header'] == 0x03:
                             sql, values = self.sql_parser(session_status[session]['request_text'])
                         else:
-                            sql, values = session_status[session]['request_text'],None
+                            sql, values = session_status[session]['request_text'],''
                         _session = eval(session)
                         #try:
                         jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
