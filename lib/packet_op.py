@@ -39,9 +39,10 @@ class Op_packet:
         '''get ip address'''
         info = psutil.net_if_addrs()
         for k, v in info.items():
-            for item in v:
-                if item[0] == 2 and not item[1] == '127.0.0.1' and ':' not in k:
-                    netcard_info = item[1]
+            if k == self.kwargs['eth']:
+                for item in v:
+                    if item[0] == 2 and not item[1] == '127.0.0.1' and ':' not in k:
+                        netcard_info = item[1]
         return netcard_info
 
     def mac_addr(self,address):
