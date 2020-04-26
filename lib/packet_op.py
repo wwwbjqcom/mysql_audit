@@ -335,7 +335,7 @@ class Op_packet:
                     elif packet_response:
                         if packet_header and packet_header in (0x09, 0x0a):
                             """connection"""
-                            self.all_session_users[session] = {'pre': True, 'user': '',
+                            self.all_session_users[session] = {'pre': True, 'user': '','db': '',
                                                                'server_version': packet_response,
                                                                'seq_id': packet_seq_id, 'status': False,'date':_cur_time}
                             continue
