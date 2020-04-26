@@ -340,7 +340,7 @@ class Op_packet:
                                                                'seq_id': packet_seq_id, 'status': False,'date':_cur_time}
                             continue
                         if session in self.all_session_users:
-                            self.create_conn(session,client_packet_text,packet_seq_id,'response',packet_response,response_status, None)
+                            self.create_conn(session,client_packet_text,packet_seq_id,'response',packet_response,response_status, '')
 
                         if session in session_status :
                             if packet_response in session_status[session]['response_type']:
