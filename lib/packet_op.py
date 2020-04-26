@@ -329,6 +329,7 @@ class Op_packet:
                             #                                                           mysql_port=tcp.dport,
                             #                                                           session=session)
                             session_status[session]['user_name'] = ''
+                            session_status[session]['db'] = ''
                             if session not in self.get_user_list and packet_header not in (0x01, 0x19, 0x18) and any([self.mysql_user,self.mysql_passwd]):
                                 self.get_user_list[session]=[src_host,tcp.sport,dst_host,tcp.dport,session]
 
