@@ -16,16 +16,16 @@ class db:
         try:
             self.conn = pymysql.connect(host=self.host,port=self.port,user=self.user,passwd=self.passwd,cursorclass=pymysql.cursors.DictCursor)
             self.cur = self.conn.cursor()
-            sql = 'select `user` from information_schema.processlist where host=%s;'
+            sql = 'select `user`,`db` from information_schema.processlist where host=%s;'
             self.cur.execute(sql,'{}:{}'.format(host,port))
             result = self.cur.fetchall()
             if result:
-                return result[0]['user']
+                return result[0]['user'],result[0]['db']
             else:
-                return None
+                return None,None
         except:
             print(traceback.format_exc())
-            return None
+            return None,None
 
     def close(self):
         try:

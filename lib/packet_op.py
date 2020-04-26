@@ -180,7 +180,7 @@ class Op_packet:
 
         return respons_status[response]
 
-    def create_conn(self,session,client_packet_text,packet_seq_id,type,response_type,response_status):
+    def create_conn(self,session,client_packet_text,packet_seq_id,type,response_type,response_status,db_name):
         """
 
         :param session:
@@ -200,6 +200,7 @@ class Op_packet:
                         self.all_session_users[session]['pre'] = False
                         self.all_session_users[session]['user'] = client_packet_text
                         self.all_session_users[session]['seq_id'] = packet_seq_id
+                        self.all_session_users[session]['db'] = db_name
                     else:
                         del  self.all_session_users[session]
                     # self.create_conn(session,client_packet_text)
@@ -216,7 +217,9 @@ class Op_packet:
                         _session = eval(session)
                         jsons = {'source_host': _session[0], 'source_port': _session[1],
                                  'destination_host': _session[2], 'destination_port': _session[3],
-                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection', 'reponse_value': '',
+                                 'user_name': self.all_session_users[session]['user'], 'sql': 'create connection',
+                                 'db': self.all_session_users[session]['db'],
+                                 'reponse_value': '',
                                  'execute_time': 0,
                                  'response_status': response_status, 'event_date': int(time.time())}
                         if self.ckhost:
@@ -246,9 +249,9 @@ class Op_packet:
         if self.mysql_user:
             _kwargs = {'host':mysql_host,'port':mysql_port,'user':self.mysql_user,'passwd':self.mysql_passwd}
             dd = db(**_kwargs)
-            user_name = dd.get(host,port)
+            user_name,db_name = dd.get(host,port)
             if user_name:
-                self.all_session_users[session] = {'status':True,'user':user_name,'pre':False,'date':time.time()}
+                self.all_session_users[session] = {'status':True,'user':user_name,'pre':False,'db':db_name,'date':time.time()}
             dd.close()
             return user_name
         else:
@@ -280,7 +283,7 @@ class Op_packet:
                 if isinstance(ip.data, dpkt.tcp.TCP):
                     tcp = ip.data
                     src_host,dst_host = self.inet_to_str(ip.src),self.inet_to_str(ip.dst)
-                    session, packet_response, client_packet_text, packet_header, packet_seq_id,response_type,response_status=_mysql_packet_op.Unpacking(
+                    session, packet_response, client_packet_text, packet_header, packet_seq_id,response_type,response_status, db_name=_mysql_packet_op.Unpacking(
                                                                                 data=tcp.data,srchost=src_host,
                                                         srcport=tcp.sport,dsthost=dst_host,dstport=tcp.dport,
                         all_session_users=self.all_session_users)
@@ -293,7 +296,7 @@ class Op_packet:
 
                     if client_packet_text:
                         if session in self.all_session_users:
-                            self.create_conn(session,client_packet_text,packet_seq_id,'client',response_type,response_status)
+                            self.create_conn(session,client_packet_text,packet_seq_id,'client',response_type,response_status, db_name)
 
                         if packet_header == 0x16:
                             session_status[session] = {'start_time': _cur_time, 'request_text': client_packet_text,
@@ -337,7 +340,7 @@ class Op_packet:
                                                                'seq_id': packet_seq_id, 'status': False,'date':_cur_time}
                             continue
                         if session in self.all_session_users:
-                            self.create_conn(session,client_packet_text,packet_seq_id,'response',packet_response,response_status)
+                            self.create_conn(session,client_packet_text,packet_seq_id,'response',packet_response,response_status, None)
 
                         if session in session_status :
                             if packet_response in session_status[session]['response_type']:
@@ -368,7 +371,7 @@ class Op_packet:
                         _session = eval(session)
                         #try:
                         jsons = {'source_host':_session[0],'source_port':_session[1],'destination_host':_session[2],'destination_port':_session[3],
-                                 'user_name':session_status[session]['user_name'],'sql':sql, 'reponse_value':values,'execute_time':execute_time,
+                                 'user_name':session_status[session]['user_name'],'sql':sql, 'db': session_status[session]['db'],'reponse_value':values,'execute_time':execute_time,
                                  'response_status':session_status[session]['response_status'], 'event_date':int(_cur_time)}
                         if self.ckhost:
                             self.ck_insert(jsons)

@@ -325,8 +325,13 @@ class mysql_packet(object):
         self.offset = 36
         _s_end = self.data.find(b'\0', self.offset)
         user_name = self.data[self.offset:_s_end].decode("utf8","ignore")
+        self.offset = _s_end + 1;
+        passwd_len = struct.unpack('B',self.data[self.offset:self.offset+1])[0]
+        self.offset += passwd_len
+        _s_end = self.data.find(b'\0', self.offset)
+        db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
 
-        return user_name,['Handshake_Packet']
+        return user_name,db_name,['Handshake_Packet']
 
     def Handshake_Packet(self):
         """
@@ -441,7 +446,7 @@ class mysql_packet(object):
         client_packet_text = None
         response_status = None
         response_type = []
-
+        db_name = None
 
 
         self.unpacke_value()
@@ -450,7 +455,7 @@ class mysql_packet(object):
                 '''client packet'''
                 session = str([srchost,srcport,dsthost,dstport])
                 if session in all_session_users and all_session_users[session]['pre'] and self.packet_seq_id and self.packet_seq_id-1==all_session_users[session]['seq_id']:
-                    client_packet_text, response_type = self.Connection_Packets()
+                    client_packet_text, db_name, response_type = self.Connection_Packets()
                 elif self.packet_header in self.client_packet_type:
                     client_packet_text,response_type = self.client_packet_type[self.packet_header]()
             else:
@@ -469,11 +474,11 @@ class mysql_packet(object):
                 '''client packet'''
                 session = str([srchost, srcport,dsthost, dstport])
                 if session in all_session_users and all_session_users[session]['pre'] and self.packet_seq_id and self.packet_seq_id-1==all_session_users[session]['seq_id']:
-                    client_packet_text, response_type = self.Connection_Packets()
+                    client_packet_text, db_name, response_type = self.Connection_Packets()
                 elif self.packet_header in self.client_packet_type:
                     client_packet_text,response_type = self.client_packet_type[self.packet_header]()
 
-        return session,packet_response,client_packet_text,self.packet_header,self.packet_seq_id,response_type,response_status
+        return session,packet_response,client_packet_text,self.packet_header,self.packet_seq_id,response_type,response_status,db_name
 
 
     def unpacke_value(self):
