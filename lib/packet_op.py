@@ -321,6 +321,7 @@ class Op_packet:
 
                         if session in self.all_session_users and self.all_session_users[session]['status']:
                             session_status[session]['user_name'] = self.all_session_users[session]['user']
+                            session_status[session]['db'] = self.all_session_users[session]['db']
                             self.all_session_users[session]['date'] = _cur_time
                         elif session not in self.all_session_users:
                             # session_status[session]['user_name'] = self.get_user_info(host=src_host,port=tcp.sport,
