@@ -329,12 +329,13 @@ class mysql_packet(object):
         passwd_len = struct.unpack('B',self.data[self.offset:self.offset+1])[0]
         self.offset += passwd_len
         _s_end = self.data.find(b'\0', self.offset)
-        db_name = ''
-        if _s_end - 1 != self.offset:
-            db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
 
-        return user_name,db_name,['Handshake_Packet']
+        db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
+        if 'mysql_native_password' not in db_name and 'caching_sha2_password' not in db_name:
+            return user_name,db_name,['Handshake_Packet']
+        else:
 
+            return user_name, '', ['Handshake_Packet']
     def Handshake_Packet(self):
         """
         Initial Handshake Packet
