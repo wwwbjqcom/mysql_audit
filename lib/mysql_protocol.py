@@ -329,7 +329,9 @@ class mysql_packet(object):
         passwd_len = struct.unpack('B',self.data[self.offset:self.offset+1])[0]
         self.offset += passwd_len
         _s_end = self.data.find(b'\0', self.offset)
-        db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
+        db_name = ''
+        if _s_end - 1 != self.offset:
+            db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
 
         return user_name,db_name,['Handshake_Packet']
 
