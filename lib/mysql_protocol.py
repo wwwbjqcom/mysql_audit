@@ -379,7 +379,7 @@ class mysql_packet(object):
         :return:
         """
 
-        return 'OK_Packet','OK'
+        return 'OK_Packet','OK',None
 
     def ERR_Packet(self):
         """
@@ -398,7 +398,7 @@ class mysql_packet(object):
 
         see:  https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_err_packet.html
         """
-        return 'ERR_Packet',self.data[self.offset+2:].decode("utf8","ignore")
+        return 'ERR_Packet',self.data[self.offset+2:].decode("utf8","ignore"),None
 
     def EOF_Packet(self):
         """
@@ -412,7 +412,7 @@ class mysql_packet(object):
         int<1>	header	0xFE EOF packet header
         ...........................
         """
-        return 'EOF_Packet','EOF'
+        return 'EOF_Packet','EOF',None
 
     def Text_Resultest(self):
         """
@@ -426,7 +426,7 @@ class mysql_packet(object):
         see: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_text_resultset.html
 
         """
-        return 'Text_Resultest','Result'
+        return 'Text_Resultest','Result',None
 
     def check_(self,packet_header,response_header):
         """
@@ -438,17 +438,17 @@ class mysql_packet(object):
 
     def check_server_response(self,packet_header):
         if self.packet_palyload == 1:
-            return self.Text_Resultest(),None
+            return self.Text_Resultest()
         elif packet_header == 0x00 and self.packet_palyload >= 7:
-            return self.OK_Packet(),None
+            return self.OK_Packet()
         elif packet_header == 0xfe and self.packet_palyload <= 9:
-            return self.EOF_Packet(),None
+            return self.EOF_Packet()
         elif packet_header == 0xff:
-            return self.ERR_Packet(),None
+            return self.ERR_Packet()
         elif packet_header in (0x09,0x0a):
             return self.Handshake_Packet()
         else:
-            return self.Text_Resultest(),None
+            return self.Text_Resultest()
 
     def Unpacking(self,data,srchost,srcport,dsthost,dstport,all_session_users):
         """
