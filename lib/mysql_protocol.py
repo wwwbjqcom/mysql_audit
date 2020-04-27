@@ -317,25 +317,32 @@ class mysql_packet(object):
 
         return 'COM_STMT_SEND_LONG_DATA',[]
 
-    def Connection_Packets(self):
+    def Connection_Packets(self, capability_flags=None):
         """
         see :
             https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase.html
         """
+        client_plugin_auth_lenenc_client_data = 1<<21
+        secure_connection = 1<<15
+        client_connect_with_db = 9
+        db_name = ''
         self.offset = 36
         _s_end = self.data.find(b'\0', self.offset)
         user_name = self.data[self.offset:_s_end].decode("utf8","ignore")
         self.offset = _s_end + 1;
-        passwd_len = struct.unpack('B',self.data[self.offset:self.offset+1])[0]
-        self.offset += passwd_len
-        _s_end = self.data.find(b'\0', self.offset)
 
-        db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
-        if 'mysql_native_password' not in db_name and 'caching_sha2_password' not in db_name:
-            return user_name,db_name,['Handshake_Packet']
+        if capability_flags & client_plugin_auth_lenenc_client_data or capability_flags & secure_connection:
+            passwd_len = struct.unpack('B',self.data[self.offset:self.offset+1])[0]
+            self.offset += passwd_len + 1
         else:
+            _s_end = self.data.find(b'\0', self.offset)
+            self.offset = _s_end + 1;
 
-            return user_name, '', ['Handshake_Packet']
+        if capability_flags & client_connect_with_db:
+            _s_end = self.data.find(b'\0', self.offset)
+            db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
+        return user_name,db_name,['Handshake_Packet']
+
     def Handshake_Packet(self):
         """
         Initial Handshake Packet
@@ -348,8 +355,13 @@ class mysql_packet(object):
         """
         _s_end = self.data.find(b'\0', self.offset)
         server_version = self.data[self.offset:_s_end].decode("utf8","ignore")
+        self.offset  = _s_end + 1 + 4 + 8 + 1
+        capability_flags_1 = struct.unpack('H', self.data[self.offset:self.offset + 2])[0]
+        self.offset += 5
+        capability_flags_2 = struct.unpack('H', self.data[self.offset:self.offset + 2])[0]
+        capability_flags = capability_flags_2 << 16 | capability_flags_1
 
-        return server_version,'create connection'
+        return server_version,'create connection',capability_flags
 
     def OK_Packet(self):
         """
@@ -426,17 +438,17 @@ class mysql_packet(object):
 
     def check_server_response(self,packet_header):
         if self.packet_palyload == 1:
-            return self.Text_Resultest()
+            return self.Text_Resultest(),None
         elif packet_header == 0x00 and self.packet_palyload >= 7:
-            return self.OK_Packet()
+            return self.OK_Packet(),None
         elif packet_header == 0xfe and self.packet_palyload <= 9:
-            return self.EOF_Packet()
+            return self.EOF_Packet(),None
         elif packet_header == 0xff:
-            return self.ERR_Packet()
+            return self.ERR_Packet(),None
         elif packet_header in (0x09,0x0a):
             return self.Handshake_Packet()
         else:
-            return self.Text_Resultest()
+            return self.Text_Resultest(),None
 
     def Unpacking(self,data,srchost,srcport,dsthost,dstport,all_session_users):
         """
@@ -450,7 +462,7 @@ class mysql_packet(object):
         response_status = None
         response_type = []
         db_name = None
-
+        capability_flags = None
 
         self.unpacke_value()
         if self._type == 'src':
@@ -458,30 +470,30 @@ class mysql_packet(object):
                 '''client packet'''
                 session = str([srchost,srcport,dsthost,dstport])
                 if session in all_session_users and all_session_users[session]['pre'] and self.packet_seq_id and self.packet_seq_id-1==all_session_users[session]['seq_id']:
-                    client_packet_text, db_name, response_type = self.Connection_Packets()
+                    client_packet_text, db_name, response_type = self.Connection_Packets(session['capability_flags'])
                 elif self.packet_header in self.client_packet_type:
                     client_packet_text,response_type = self.client_packet_type[self.packet_header]()
             else:
                 '''server response'''
                 session = str([dsthost, dstport, srchost, srcport])
                 if any([self.packet_palyload,self.packet_seq_id,self.packet_header]):
-                    packet_response,response_status = self.check_server_response(self.packet_header)
+                    packet_response,response_status, capability_flags = self.check_server_response(self.packet_header)
 
         elif self._type == 'des':
             if srchost == self._ip:
                 '''server response'''
                 session = str([dsthost, dstport, srchost, srcport])
                 if any([self.packet_palyload,self.packet_seq_id,self.packet_header]):
-                    packet_response,response_status = self.check_server_response(self.packet_header)
+                    packet_response,response_status, capability_flags = self.check_server_response(self.packet_header)
             else:
                 '''client packet'''
                 session = str([srchost, srcport,dsthost, dstport])
                 if session in all_session_users and all_session_users[session]['pre'] and self.packet_seq_id and self.packet_seq_id-1==all_session_users[session]['seq_id']:
-                    client_packet_text, db_name, response_type = self.Connection_Packets()
+                    client_packet_text, db_name, response_type = self.Connection_Packets(session['capability_flags'])
                 elif self.packet_header in self.client_packet_type:
                     client_packet_text,response_type = self.client_packet_type[self.packet_header]()
 
-        return session,packet_response,client_packet_text,self.packet_header,self.packet_seq_id,response_type,response_status,db_name
+        return session,packet_response,client_packet_text,self.packet_header,self.packet_seq_id,response_type,response_status,db_name,capability_flags
 
 
     def unpacke_value(self):

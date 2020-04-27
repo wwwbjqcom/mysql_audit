@@ -283,7 +283,7 @@ class Op_packet:
                 if isinstance(ip.data, dpkt.tcp.TCP):
                     tcp = ip.data
                     src_host,dst_host = self.inet_to_str(ip.src),self.inet_to_str(ip.dst)
-                    session, packet_response, client_packet_text, packet_header, packet_seq_id,response_type,response_status, db_name=_mysql_packet_op.Unpacking(
+                    session, packet_response, client_packet_text, packet_header, packet_seq_id,response_type,response_status, db_name, capability_flags=_mysql_packet_op.Unpacking(
                                                                                 data=tcp.data,srchost=src_host,
                                                         srcport=tcp.sport,dsthost=dst_host,dstport=tcp.dport,
                         all_session_users=self.all_session_users)
@@ -337,7 +337,7 @@ class Op_packet:
                     elif packet_response:
                         if packet_header and packet_header in (0x09, 0x0a):
                             """connection"""
-                            self.all_session_users[session] = {'pre': True, 'user': '','db': '',
+                            self.all_session_users[session] = {'pre': True, 'user': '','db': '','capability_flags':capability_flags,
                                                                'server_version': packet_response,
                                                                'seq_id': packet_seq_id, 'status': False,'date':_cur_time}
                             continue
