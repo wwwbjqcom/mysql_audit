@@ -250,6 +250,8 @@ class Op_packet:
             _kwargs = {'host':mysql_host,'port':mysql_port,'user':self.mysql_user,'passwd':self.mysql_passwd}
             dd = db(**_kwargs)
             user_name,db_name = dd.get(host,port)
+            if db_name in ('null' , 'Null') or db_name is None:
+                db_name = ''
             if user_name:
                 self.all_session_users[session] = {'status':True,'user':user_name,'pre':False,'db':db_name,'date':time.time()}
             dd.close()
