@@ -470,7 +470,7 @@ class mysql_packet(object):
                 '''client packet'''
                 session = str([srchost,srcport,dsthost,dstport])
                 if session in all_session_users and all_session_users[session]['pre'] and self.packet_seq_id and self.packet_seq_id-1==all_session_users[session]['seq_id']:
-                    client_packet_text, db_name, response_type = self.Connection_Packets(session['capability_flags'])
+                    client_packet_text, db_name, response_type = self.Connection_Packets(all_session_users[session]['capability_flags'])
                 elif self.packet_header in self.client_packet_type:
                     client_packet_text,response_type = self.client_packet_type[self.packet_header]()
             else:
@@ -489,7 +489,7 @@ class mysql_packet(object):
                 '''client packet'''
                 session = str([srchost, srcport,dsthost, dstport])
                 if session in all_session_users and all_session_users[session]['pre'] and self.packet_seq_id and self.packet_seq_id-1==all_session_users[session]['seq_id']:
-                    client_packet_text, db_name, response_type = self.Connection_Packets(session['capability_flags'])
+                    client_packet_text, db_name, response_type = self.Connection_Packets(all_session_users[session]['capability_flags'])
                 elif self.packet_header in self.client_packet_type:
                     client_packet_text,response_type = self.client_packet_type[self.packet_header]()
 
