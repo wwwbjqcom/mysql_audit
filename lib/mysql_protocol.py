@@ -325,6 +325,7 @@ class mysql_packet(object):
         client_plugin_auth_lenenc_client_data = 1<<21
         secure_connection = 1<<15
         client_connect_with_db = 9
+        client_plugin_auth = 1 << 19
         db_name = ''
         self.offset = 36
         _s_end = self.data.find(b'\0', self.offset)
@@ -338,9 +339,10 @@ class mysql_packet(object):
             _s_end = self.data.find(b'\0', self.offset)
             self.offset = _s_end + 1;
 
-        if capability_flags & client_connect_with_db:
+        if capability_flags & client_connect_with_db and capability_flags & client_plugin_auth < 1:
             _s_end = self.data.find(b'\0', self.offset)
             db_name = self.data[self.offset:_s_end].decode("utf8","ignore")
+
         return user_name,db_name,['Handshake_Packet']
 
     def Handshake_Packet(self):
