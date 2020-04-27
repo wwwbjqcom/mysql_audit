@@ -428,7 +428,7 @@ class Op_packet:
                 conn = connect(ck_url)
                 cursor = conn.cursor()
                 cursor.executemany('insert into mysql_audit.mysql_audit_info(source_host,source_port,destination_host,destination_port,user_name,'
-                                   'sql,reponse_value,execute_time,response_status,event_date) values',self.op_list)
+                                   'sql,db,reponse_value,execute_time,response_status,event_date) values',self.op_list)
             except:
                 print(traceback.format_exc())
             self.op_num = 0
