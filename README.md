@@ -40,7 +40,7 @@ python tcp_audit.py -h 可以获取参数介绍
  2. 日志保存在log目录，且默认10分钟切割一次，保留一个小时的数据，如有需要可自行修改log.py中的配置  
  3. 默认以日志的方式记录，如果指定了--ckhost参数将直接存入clickhouse，需首先在clickhouse中创建指定的库表：
 
-    CREATE table mysql_audit.mysql_audit_info(   source_host String,   source_port UInt64,   destination_host String,   destination_port UInt64,   user_name String,   sql String,   reponse_value String,   execute_time Float64,   response_status String,   event_date DateTime) ENGINE=MergeTree()   PARTITION BY toYYYYMMDD(event_date)   ORDER BY (source_host, source_port, event_date)   TTL event_date + INTERVAL 5 DAY   SETTINGS index_granularity=8192,enable_mixed_granularity_parts=1;
+    CREATE table mysql_audit.mysql_audit_info(   source_host String,   source_port UInt64,   destination_host String,   destination_port UInt64,   user_name String,   db String, sql String,   reponse_value String,   execute_time Float64,   response_status String,   event_date DateTime) ENGINE=MergeTree()   PARTITION BY toYYYYMMDD(event_date)   ORDER BY (source_host, source_port, event_date)   TTL event_date + INTERVAL 5 DAY   SETTINGS index_granularity=8192,enable_mixed_granularity_parts=1;
 
   
 ## 需求的包：  
