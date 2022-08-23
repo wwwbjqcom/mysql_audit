@@ -47,4 +47,3 @@ python tcp_audit.py -h 可以获取参数介绍
   
 dpkt、psutil、pypcap、pymysql 、clickhouse-driver
   
-### 有任何疑问或使用中的问题可以加qq群(479472450)交流
